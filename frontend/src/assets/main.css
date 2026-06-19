@@ -1,0 +1,158 @@
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+body {
+  font-family:
+    'Inter', 'Hiragino Sans', 'Noto Sans JP', system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+  /* 淡いピンクの背景（カードの白との対比で Google Form 風に） */
+  background: linear-gradient(180deg, #fff5f9 0%, #fdeef5 100%);
+  background-attachment: fixed;
+  color: var(--p-text-color, #3a2a31);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+/* ---- Material Design 2 / Google Form 風カード ---- */
+.md-card {
+  background: var(--p-content-background, #ffffff);
+  border: 1px solid var(--p-content-border-color, #f3d9e4);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  box-shadow:
+    0 1px 2px rgba(190, 24, 93, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.content-card {
+  border-top: 4px solid var(--p-primary-color, #ec4899);
+}
+
+.field-title {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.field-desc {
+  margin: 0 0 1.1rem;
+  font-size: 0.9rem;
+  color: var(--p-text-muted-color, #8a7079);
+  line-height: 1.5;
+}
+
+.required-mark {
+  color: #e11d48;
+  margin-left: 0.15rem;
+}
+
+/* ---- Discord 風 Markdown ---- */
+.discord-md {
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.discord-md h1,
+.discord-md h2,
+.discord-md h3 {
+  margin: 0.6em 0 0.3em;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.discord-md h1 {
+  font-size: 1.5rem;
+}
+.discord-md h2 {
+  font-size: 1.25rem;
+}
+.discord-md h3 {
+  font-size: 1.05rem;
+}
+
+.discord-md p {
+  margin: 0.4em 0;
+}
+
+.discord-md a {
+  color: #db2777;
+  text-decoration: none;
+}
+
+.discord-md a:hover {
+  text-decoration: underline;
+}
+
+.discord-md ul,
+.discord-md ol {
+  margin: 0.4em 0;
+  padding-left: 1.4em;
+}
+
+.discord-md code {
+  background: rgba(236, 72, 153, 0.1);
+  color: #be185d;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.875em;
+}
+
+.discord-md pre {
+  background: #fff0f6;
+  border: 1px solid #f3d9e4;
+  border-radius: 6px;
+  padding: 0.7em 0.9em;
+  overflow-x: auto;
+}
+
+.discord-md pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.discord-md blockquote {
+  margin: 0.4em 0;
+  padding: 0.1em 0 0.1em 0.8em;
+  border-left: 4px solid #f9a8d4;
+  color: var(--p-text-muted-color, #8a7079);
+}
+
+.discord-md hr {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 0.8em 0;
+}
+
+/* spoiler（||...||） */
+.discord-md .spoiler {
+  background: #f3d9e4;
+  color: transparent;
+  border-radius: 4px;
+  padding: 0 2px;
+  cursor: pointer;
+  transition: color 0.1s ease;
+}
+
+.discord-md .spoiler.revealed,
+.discord-md .spoiler:hover {
+  color: inherit;
+  background: rgba(236, 72, 153, 0.15);
+}
