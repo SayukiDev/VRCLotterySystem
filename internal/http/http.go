@@ -13,11 +13,6 @@ type Http struct {
 }
 
 func NewHttp(c *config.Config, p *provider.Provider) *Http {
-	if c.LogLevel == "debug" {
-		gin.SetMode(gin.DebugMode)
-	} else {
-		gin.SetMode(gin.ReleaseMode)
-	}
 	e := gin.New()
 	e.Use(Logger())
 	e.Use(gin.Recovery())

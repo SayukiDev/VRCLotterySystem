@@ -9,6 +9,7 @@ import (
 	"github.com/SayukiDev/VRCLotterySystem/internal/provider"
 	"github.com/SayukiDev/VRCLotterySystem/internal/task"
 	"github.com/SayukiDev/VRCLotterySystem/log"
+	"github.com/gin-gonic/gin"
 
 	"go.uber.org/zap"
 )
@@ -31,6 +32,15 @@ func main() {
 	c, err := config.LoadConfig(*configPath)
 	if err != nil {
 		log.ErrorE("Loading config file failed", zap.Error(err))
+	}
+
+	gin.SetMode(gin.ReleaseMode)
+	switch c.LogLevel {
+	case "debug":
+		log.SetLogLevel(c.LogLevel)
+		gin.SetMode(gin.DebugMode)
+	default:
+		log.SetLogLevel(c.LogLevel)
 	}
 
 	p := provider.NewProvider(c)
