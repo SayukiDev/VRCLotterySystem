@@ -1,6 +1,8 @@
 package eth
 
 import (
+	"crypto/sha256"
+	"encoding/binary"
 	"fmt"
 	"math/big"
 	"strings"
@@ -140,19 +142,49 @@ func (c *Client) RandomInRange(min, max int64) (int64, error) {
 	return randomFromSeed(hash, min, max)
 }
 
-func (c *Client) RandomsInRange(min, max int64, count int) ([]int64, error) {
+func (c *Client) RandomIndexInRange(min1, max int, count int) ([]int, error) {
+	if min1 > max {
+		return nil, fmt.Errorf("invalid range: min %d > max %d", min1, max)
+	}
+	if min1 < 0 || max >= count {
+		return nil, fmt.Errorf("index range [%d,%d] out of bounds for slice len %d", min1, max, count)
+	}
 	hash, err := c.LatestBlockHash()
 	if err != nil {
 		return nil, err
 	}
-	rs := make([]int64, count)
-	for i := 0; i < count; i++ {
-		rs[i], err = randomFromSeed(hash, min, max)
-		if err != nil {
-			return nil, err
-		}
+	return shuffledIndexFromSeed(hash, min1, max)
+}
+
+func shuffledIndexFromSeed(seedHex string, min1, max int) ([]int, error) {
+	seedHex = strings.TrimPrefix(seedHex, "0x")
+	seed, ok := new(big.Int).SetString(seedHex, 16)
+	if !ok {
+		return nil, fmt.Errorf("invalid seed %q", seedHex)
 	}
-	return rs, nil
+	seedBytes := seed.Bytes()
+
+	n := max - min1 + 1
+	idx := make([]int, n)
+	for i := range idx {
+		idx[i] = min1 + i
+	}
+	for i := n - 1; i > 0; i-- {
+		j := randIntFromSeed(seedBytes, i, int64(i+1))
+		idx[i], idx[j] = idx[j], idx[i]
+	}
+	return idx, nil
+}
+
+func randIntFromSeed(seedBytes []byte, counter int, mod int64) int {
+	h := sha256.New()
+	h.Write(seedBytes)
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:], uint64(counter))
+	h.Write(buf[:])
+
+	v := new(big.Int).SetBytes(h.Sum(nil))
+	return int(v.Mod(v, big.NewInt(mod)).Int64())
 }
 
 func randomFromSeed(seedHex string, min, max int64) (int64, error) {

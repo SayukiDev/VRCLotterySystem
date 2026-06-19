@@ -3,19 +3,21 @@ package provider
 import "github.com/SayukiDev/VRCLotterySystem/internal/data"
 
 func (p *Provider) GetBlacklist() []string {
-	d := p.Data.Get()
-	resp := make([]string, 0, len(d.BlackList))
-	for k := range d.BlackList {
-		resp = append(resp, k)
-	}
+	var resp []string
+	p.Data.RLock(func(d *data.Content) {
+		resp = make([]string, 0, len(d.BlackList))
+		for k := range d.BlackList {
+			resp = append(resp, k)
+		}
+	})
 	return resp
 }
 
 func (p *Provider) AddToBlackList(id string) (err error) {
-	p.Data.Set(func(d *data.Data) {
+	p.Data.Lock(func(d *data.Content) {
 		d.BlackList[id] = struct{}{}
-		err = d.Save(p.C.DataPath)
 	})
+	err = p.Data.Save(p.C.DataPath)
 	if err != nil {
 		return err
 	}
@@ -23,10 +25,10 @@ func (p *Provider) AddToBlackList(id string) (err error) {
 }
 
 func (p *Provider) RemoveFromBlackList(id string) (err error) {
-	p.Data.Set(func(d *data.Data) {
+	p.Data.Lock(func(d *data.Content) {
 		delete(d.BlackList, id)
-		err = d.Save(p.C.DataPath)
 	})
+	err = p.Data.Save(p.C.DataPath)
 	if err != nil {
 		return err
 	}
@@ -34,7 +36,9 @@ func (p *Provider) RemoveFromBlackList(id string) (err error) {
 }
 
 func (p *Provider) IsInBlackList(id string) bool {
-	d := p.Data.Get()
-	_, ok := d.BlackList[id]
+	var ok bool
+	p.Data.RLock(func(d *data.Content) {
+		_, ok = d.BlackList[id]
+	})
 	return ok
 }

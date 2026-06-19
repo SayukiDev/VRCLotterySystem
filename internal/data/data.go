@@ -17,13 +17,17 @@ const (
 
 type Data struct {
 	lock    sync.RWMutex
-	Id      string    `json:"id"`
-	Date    time.Time `json:"date"`
-	Showed  bool      `json:"showed"`
-	Max     int       `json:"number"`
-	Content `json:"-"`
+	content Content
 }
 type Content struct {
+	Id         string    `json:"id"`
+	Date       time.Time `json:"date"`
+	Showed     bool      `json:"showed"`
+	Max        int       `json:"number"`
+	ExtContent `json:"-"`
+}
+
+type ExtContent struct {
 	BlackList BlackList
 	StaffList StaffList
 	Forms     Inputs
@@ -106,11 +110,13 @@ func (r *Results) Load(path string) error {
 
 func NewData() *Data {
 	return &Data{
-		Content: Content{
-			Forms:     make(Inputs),
-			BlackList: make(BlackList),
-			StaffList: make(StaffList),
-			Results:   make(Results),
+		content: Content{
+			ExtContent: ExtContent{
+				BlackList: make(BlackList),
+				StaffList: make(StaffList),
+				Forms:     make(Inputs),
+				Results:   make(Results),
+			},
 		},
 	}
 }
@@ -118,19 +124,23 @@ func NewData() *Data {
 func (d *Data) Save(path string) error {
 	d.lock.Lock()
 	defer d.lock.Unlock()
-	err := d.BlackList.Save(path)
+	err := d.content.BlackList.Save(path)
 	if err != nil {
 		return err
 	}
-	err = d.Forms.Save(path)
+	err = d.content.Forms.Save(path)
 	if err != nil {
 		return err
 	}
-	err = d.Results.Save(path)
+	err = d.content.Results.Save(path)
 	if err != nil {
 		return err
 	}
-	err = save(filepath.Join(path, "data.json"), d.Content)
+	err = d.content.StaffList.Save(path)
+	if err != nil {
+		return err
+	}
+	err = save(filepath.Join(path, "data.json"), d.content)
 	if err != nil {
 		return err
 	}
@@ -138,36 +148,37 @@ func (d *Data) Save(path string) error {
 }
 
 func (d *Data) Load(path string) error {
-	err := d.BlackList.Load(path)
+	err := load(filepath.Join(path, "data.json"), &d.content)
 	if err != nil {
 		return err
 	}
-	err = d.Forms.Load(path)
+	err = d.content.BlackList.Load(path)
 	if err != nil {
 		return err
 	}
-	err = d.Results.Load(path)
+	err = d.content.StaffList.Load(path)
 	if err != nil {
 		return err
 	}
-	err = save(filepath.Join(path, "data.json"), d.Content)
+	err = d.content.Forms.Load(path)
+	if err != nil {
+		return err
+	}
+	err = d.content.Results.Load(path)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// Get will return a pointer to the Data object
-// If you need to change the Data object, please using the Set method
-// DO NOT modify the returned Data object
-func (d *Data) Get() *Data {
+func (d *Data) RLock(handle func(data *Content)) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
-	return d
+	handle(&d.content)
 }
 
-func (d *Data) Set(handle func(data *Data)) {
+func (d *Data) Lock(handle func(data *Content)) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
-	handle(d)
+	handle(&d.content)
 }

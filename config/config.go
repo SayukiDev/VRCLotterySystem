@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 
 	"github.com/SayukiDev/VRCLotterySystem/internal/global/validator"
@@ -16,12 +17,12 @@ type Config struct {
 }
 
 type FormItem struct {
-	IsId     bool     `json:"is_id" validate:"required"`
+	IsId     bool     `json:"is_id"`
 	Title    string   `json:"title" validate:"required"`
 	Desc     string   `json:"desc"`
 	Required bool     `json:"required"`
 	Options  []string `json:"options"`
-	Type     string   `json:"type" validate:"required oneof=content input options"`
+	Type     string   `json:"type" validate:"required,oneof=content input options"`
 }
 
 func DefaultConfig() *Config {
@@ -54,6 +55,7 @@ func LoadConfig(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 	c := DefaultConfig()
 	err = json.NewDecoder(f).Decode(c)
 	if err != nil {
@@ -67,5 +69,14 @@ func LoadConfig(path string) (*Config, error) {
 }
 
 func (c *Config) Validate() error {
+	haveID := false
+	for _, v := range c.Form {
+		if v.IsId {
+			haveID = true
+		}
+	}
+	if !haveID {
+		return errors.New("no id found in form")
+	}
 	return validator.V.Struct(c)
 }

@@ -1,10 +1,11 @@
 package task
 
 import (
-	"github.com/SayukiDev/VRCLotterySystem/internal/provider"
-	"github.com/SayukiDev/VRCLotterySystem/log"
 	"time"
 
+	"github.com/SayukiDev/VRCLotterySystem/internal/data"
+	"github.com/SayukiDev/VRCLotterySystem/internal/provider"
+	"github.com/SayukiDev/VRCLotterySystem/log"
 	"go.uber.org/zap"
 )
 
@@ -23,7 +24,16 @@ func NewTask(p *provider.Provider, tick time.Duration) *Task {
 }
 
 func (t *Task) DrawingTask() error {
-	if t.p.Data.Get().Date.After(time.Now()) {
+	var showed bool
+	var date time.Time
+	t.p.Data.RLock(func(d *data.Content) {
+		showed = d.Showed
+		date = d.Date
+	})
+	if showed {
+		return nil
+	}
+	if date.After(time.Now()) {
 		return nil
 	}
 	ids, err := t.p.Drawing()

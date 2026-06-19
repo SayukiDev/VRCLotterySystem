@@ -20,26 +20,32 @@ func (p *Provider) GetId(input data.Input) string {
 }
 
 func (p *Provider) AddInput(input data.Input) error {
-	d := p.Data.Get()
 	id := p.GetId(input)
-	if time.Now().After(d.Date) {
-		return errors.New("date expired")
-	}
-	if _, ok := d.BlackList[id]; ok {
-		return nil
-	}
-	if _, ok := d.Forms[id]; ok {
-		return errors.New("input already exists")
-	}
-	p.Data.Set(func(d *data.Data) {
+	var err error
+	p.Data.Lock(func(d *data.Content) {
+		if time.Now().After(d.Date) {
+			err = errors.New("date expired")
+			return
+		}
+		if _, ok := d.BlackList[id]; ok {
+			return
+		}
+		if _, ok := d.Forms[id]; ok {
+			err = errors.New("input already exists")
+			return
+		}
 		d.Forms[id] = input
+		err = d.Forms.Save(p.C.DataPath)
 	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (p *Provider) ClearInputs() error {
 	var err error
-	p.Data.Set(func(d *data.Data) {
+	p.Data.Lock(func(d *data.Content) {
 		d.Forms = make(data.Inputs)
 		err = d.Forms.Save(p.C.DataPath)
 	})
@@ -47,15 +53,22 @@ func (p *Provider) ClearInputs() error {
 }
 
 func (p *Provider) GetInputList() []string {
-	resp := make([]string, 0, len(p.Data.Get().Forms))
-	for k := range p.Data.Get().Forms {
-		resp = append(resp, k)
-	}
+	var resp []string
+	p.Data.RLock(func(d *data.Content) {
+		resp = make([]string, 0, len(d.Forms))
+		for k := range d.Forms {
+			resp = append(resp, k)
+		}
+	})
 	return resp
 }
 
 func (p *Provider) GetInput(id string) (*data.Input, error) {
-	input, ok := p.Data.Get().Forms[id]
+	var input data.Input
+	var ok bool
+	p.Data.RLock(func(d *data.Content) {
+		input, ok = d.Forms[id]
+	})
 	if !ok {
 		return nil, errors.New("input not found")
 	}

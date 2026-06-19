@@ -2,6 +2,7 @@ package eth
 
 import (
 	"os"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -126,6 +127,188 @@ func TestRandomStringFromSeed(t *testing.T) {
 			t.Error("expected error for invalid seed")
 		}
 	})
+}
+
+func TestShuffledIndexFromSeed(t *testing.T) {
+	const seed = "0xabcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+	isPermutation := func(t *testing.T, got []int, min1, max int) {
+		t.Helper()
+		want := max - min1 + 1
+		if len(got) != want {
+			t.Fatalf("len = %d, want %d", len(got), want)
+		}
+		seen := make(map[int]bool, len(got))
+		for _, v := range got {
+			if v < min1 || v > max {
+				t.Errorf("index %d out of [%d,%d]", v, min1, max)
+			}
+			if seen[v] {
+				t.Errorf("duplicate index %d", v)
+			}
+			seen[v] = true
+		}
+		if len(seen) != want {
+			t.Errorf("got %d unique indices, want %d", len(seen), want)
+		}
+	}
+
+	t.Run("permutation from zero", func(t *testing.T) {
+		got, err := shuffledIndexFromSeed(seed, 0, 99)
+		if err != nil {
+			t.Fatal(err)
+		}
+		isPermutation(t, got, 0, 99)
+	})
+
+	t.Run("permutation non-zero min", func(t *testing.T) {
+		got, err := shuffledIndexFromSeed(seed, 10, 20)
+		if err != nil {
+			t.Fatal(err)
+		}
+		isPermutation(t, got, 10, 20)
+	})
+
+	t.Run("deterministic", func(t *testing.T) {
+		a, err := shuffledIndexFromSeed(seed, 0, 50)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, err := shuffledIndexFromSeed(seed, 0, 50)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !slices.Equal(a, b) {
+			t.Errorf("not deterministic:\n%v\n%v", a, b)
+		}
+	})
+
+	t.Run("single element", func(t *testing.T) {
+		got, err := shuffledIndexFromSeed(seed, 7, 7)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !slices.Equal(got, []int{7}) {
+			t.Errorf("got %v, want [7]", got)
+		}
+	})
+
+	t.Run("different seed differs", func(t *testing.T) {
+		const seed2 = "0x123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
+		a, err := shuffledIndexFromSeed(seed, 0, 99)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, err := shuffledIndexFromSeed(seed2, 0, 99)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if slices.Equal(a, b) {
+			t.Error("expected different orderings for different seeds")
+		}
+	})
+
+	t.Run("not identity order", func(t *testing.T) {
+		got, err := shuffledIndexFromSeed(seed, 0, 99)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if slices.IsSorted(got) {
+			t.Error("output is still sorted; no shuffling happened")
+		}
+	})
+
+	t.Run("invalid seed", func(t *testing.T) {
+		if _, err := shuffledIndexFromSeed("0xzz", 0, 9); err == nil {
+			t.Error("expected error for invalid seed")
+		}
+	})
+}
+
+func TestRandIntFromSeed(t *testing.T) {
+	seed := []byte{0x01, 0x02, 0x03, 0x04}
+
+	t.Run("within range", func(t *testing.T) {
+		for i := 0; i < 100; i++ {
+			got := randIntFromSeed(seed, i, 10)
+			if got < 0 || got >= 10 {
+				t.Errorf("counter %d: got %d out of [0,10)", i, got)
+			}
+		}
+	})
+
+	t.Run("deterministic", func(t *testing.T) {
+		a := randIntFromSeed(seed, 42, 1000)
+		b := randIntFromSeed(seed, 42, 1000)
+		if a != b {
+			t.Errorf("not deterministic for same seed/counter: %d != %d", a, b)
+		}
+	})
+
+	t.Run("mod one always zero", func(t *testing.T) {
+		for i := 0; i < 10; i++ {
+			if got := randIntFromSeed(seed, i, 1); got != 0 {
+				t.Errorf("mod 1 should be 0, got %d", got)
+			}
+		}
+	})
+
+	t.Run("varies by counter", func(t *testing.T) {
+		seen := make(map[int]bool)
+		for i := 0; i < 50; i++ {
+			seen[randIntFromSeed(seed, i, 1000)] = true
+		}
+		if len(seen) < 2 {
+			t.Errorf("expected varied outputs, got %d distinct", len(seen))
+		}
+	})
+}
+
+func TestRandomIndexInRange_Validation(t *testing.T) {
+	c := NewClient("http://unused.invalid")
+	slice := make([]any, 5)
+
+	tests := []struct {
+		name      string
+		min1, max int
+	}{
+		{"min greater than max", 3, 1},
+		{"negative min", -1, 2},
+		{"max equals len", 0, 5},
+		{"max greater than len", 0, 6},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := c.RandomIndexInRange(tt.min1, tt.max, len(slice)); err == nil {
+				t.Errorf("expected error for range [%d,%d] on slice len %d", tt.min1, tt.max, len(slice))
+			}
+		})
+	}
+}
+
+func TestRandomIndexInRange(t *testing.T) {
+	c := newClient(t)
+	slice := make([]any, 20)
+	got, err := c.RandomIndexInRange(0, len(slice)-1, len(slice))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != len(slice) {
+		t.Fatalf("len = %d, want %d", len(got), len(slice))
+	}
+	seen := make(map[int]bool, len(got))
+	for _, v := range got {
+		if v < 0 || v >= len(slice) {
+			t.Errorf("index %d out of [0,%d)", v, len(slice))
+		}
+		if seen[v] {
+			t.Errorf("duplicate index %d", v)
+		}
+		seen[v] = true
+	}
+	if len(seen) != len(slice) {
+		t.Errorf("got %d unique indices, want %d", len(seen), len(slice))
+	}
+	t.Logf("shuffled indices = %v", got)
 }
 
 func TestBlockNumber(t *testing.T) {
