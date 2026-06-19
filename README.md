@@ -14,7 +14,7 @@ CGO_ENABLED=0 GOOS=linux go build -a -trimpath -ldflags="-s -w -X main.Version={
 ## TODO
 - [ ] Unit Test
 - [ ] 管理用Discord botの実装
-- [ ] フロントエンドの実装
+- [x] フロントエンドの実装
 - [ ] 基本ロジックの見直し
 
 ## Project Structure
