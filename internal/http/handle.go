@@ -57,7 +57,7 @@ func (h *Handle) SubmitForm(c *gin.Context) {
 		}
 		var ok bool
 		switch v.Type {
-		case "inputs":
+		case "input":
 			_, ok = req.Input.Content[i]
 		case "options":
 			_, ok = req.Input.Selected[i]
