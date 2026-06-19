@@ -20,10 +20,10 @@ var configPath = flag.String("c", "config.json", "config file path")
 var Version = "v0.0.1"
 
 func printHelloMessage() {
-	log.Info("Dawing System")
+	log.Info("VRCLotterySystem")
 	log.Info("Version: " + Version)
 	log.Info("Author: https://github.com/SayukiDev")
-	log.Info("Repository: SayukiDev/DrawingSystem")
+	log.Info("Repository: SayukiDev/VRCLotterySystem")
 }
 
 func main() {
