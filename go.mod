@@ -6,8 +6,6 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-playground/validator/v10 v10.30.3
 	github.com/go-resty/resty/v2 v2.17.2
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
-	github.com/puzpuzpuz/xsync/v4 v4.5.0
 	go.uber.org/zap v1.28.0
 )
 
