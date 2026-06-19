@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/SayukiDev/VRCLotterySystem/internal/data"
 	"github.com/SayukiDev/VRCLotterySystem/internal/provider"
@@ -91,4 +92,18 @@ func (h *Handle) GetAllowList(c *gin.Context) {
 	r = append(r, h.p.GetStaffList()...)
 	resp := strings.Join(r, "\n")
 	c.String(200, resp)
+}
+
+func (h *Handle) IsActive(c *gin.Context) {
+	ok := false
+	h.p.Data.Read(func(d *data.Content) {
+		if d.Date.After(time.Now()) {
+			ok = true
+		}
+	})
+	c.JSON(200, CommonResp{
+		Code: 200,
+		Msg:  "success",
+		Data: ok,
+	})
 }

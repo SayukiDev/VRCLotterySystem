@@ -26,7 +26,7 @@ func NewTask(p *provider.Provider, tick time.Duration) *Task {
 func (t *Task) DrawingTask() error {
 	var showed bool
 	var date time.Time
-	t.p.Data.RLock(func(d *data.Content) {
+	t.p.Data.Read(func(d *data.Content) {
 		showed = d.Showed
 		date = d.Date
 	})

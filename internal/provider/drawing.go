@@ -15,7 +15,7 @@ func (p *Provider) SetDrawing(max int, date string) error {
 	if err != nil {
 		return err
 	}
-	p.Data.Lock(func(d *data.Content) {
+	p.Data.Write(func(d *data.Content) {
 		d.Id = id
 		d.Date, err = time.Parse("2006-01-02 15:04", date)
 		d.Showed = false
@@ -37,7 +37,7 @@ func (p *Provider) Drawing() ([]string, error) {
 	c := eth.NewClient(ethUrl)
 	var formList []string
 	var max int
-	p.Data.RLock(func(d *data.Content) {
+	p.Data.Read(func(d *data.Content) {
 		formList = make([]string, 0, len(d.Forms))
 		for k := range d.Forms {
 			formList = append(formList, k)
@@ -56,7 +56,7 @@ func (p *Provider) Drawing() ([]string, error) {
 	for _, i := range indexs[:take] {
 		ids = append(ids, formList[i])
 	}
-	p.Data.Lock(func(d *data.Content) {
+	p.Data.Write(func(d *data.Content) {
 		d.Showed = true
 	})
 	err = p.Data.Save(p.C.DataPath)

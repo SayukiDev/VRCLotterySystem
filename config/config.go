@@ -12,7 +12,7 @@ type Config struct {
 	LogLevel        string     `json:"log_level" validate:"oneof=debug info warn error fatal"`
 	DataPath        string     `json:"data_path" validate:"required"`
 	DiscordMasterID string     `json:"discord_master_id" validate:"required"`
-	Terms           string     `json:"terms" validate:"required"`
+	Terms           string     `json:"terms" validate:"required"` // Markdown
 	Form            []FormItem `json:"form" validate:"required"`
 }
 

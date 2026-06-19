@@ -171,13 +171,13 @@ func (d *Data) Load(path string) error {
 	return nil
 }
 
-func (d *Data) RLock(handle func(data *Content)) {
+func (d *Data) Read(handle func(data *Content)) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 	handle(&d.content)
 }
 
-func (d *Data) Lock(handle func(data *Content)) {
+func (d *Data) Write(handle func(data *Content)) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 	handle(&d.content)

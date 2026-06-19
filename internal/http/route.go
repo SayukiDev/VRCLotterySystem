@@ -18,5 +18,6 @@ func (r *Route) InjectRoute(e *gin.Engine) error {
 	api.GET("getForm", r.h.GetForm)
 	api.POST("submitForm", r.h.SubmitForm)
 	api.GET("getAllowList", r.h.GetAllowList)
+	api.GET("isActive", r.h.IsActive)
 	return nil
 }
