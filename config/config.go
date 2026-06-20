@@ -4,25 +4,49 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"path/filepath"
 
 	"github.com/SayukiDev/VRCLotterySystem/internal/global/validator"
 )
 
 type Config struct {
-	LogLevel        string     `json:"log_level" validate:"oneof=debug info warn error fatal"`
-	DataPath        string     `json:"data_path" validate:"required"`
-	DiscordMasterID string     `json:"discord_master_id" validate:"required"`
-	Terms           string     `json:"terms" validate:"required"` // Markdown
-	Form            []FormItem `json:"form" validate:"required"`
+	LogLevel        string       `json:"log_level" validate:"oneof=debug info warn error fatal"`
+	DataPath        string       `json:"data_path" validate:"required"`
+	DiscordMasterID string       `json:"discord_master_id" validate:"required"`
+	Terms           StringOrFile `json:"terms" validate:"required"` // Markdown
+	Form            []FormItem   `json:"form" validate:"required"`
 }
 
 type FormItem struct {
-	IsId     bool     `json:"is_id"`
-	Title    string   `json:"title" validate:"required"`
-	Desc     string   `json:"desc"`
-	Required bool     `json:"required"`
-	Options  []string `json:"options"`
-	Type     string   `json:"type" validate:"required,oneof=content input options"`
+	IsId     bool         `json:"is_id"`
+	Title    string       `json:"title" validate:"required"`
+	Desc     StringOrFile `json:"desc"`
+	Required bool         `json:"required"`
+	Options  []string     `json:"options"`
+	Type     string       `json:"type" validate:"required,oneof=content input options"`
+}
+
+type StringOrFile string
+
+func (s *StringOrFile) UnmarshalJSON(b []byte) error {
+	body := ""
+	err := json.Unmarshal(b, &body)
+	if err != nil {
+		return err
+	}
+	if body == "" {
+		return nil
+	}
+	if filepath.Ext(body) != "" {
+		bs, err := os.ReadFile(body)
+		if err != nil {
+			return err
+		}
+		(*s) = StringOrFile(bs)
+	} else {
+		(*s) = StringOrFile(body)
+	}
+	return nil
 }
 
 func DefaultConfig() *Config {
