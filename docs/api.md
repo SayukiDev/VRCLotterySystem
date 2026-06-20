@@ -78,7 +78,7 @@ VRChat向け抽選システムのHTTP API仕様書です。
 | メソッド | パス               | 説明                       |
 | -------- | ------------------ | -------------------------- |
 | GET      | `/api/getTerms`    | 利用規約の取得             |
-| GET      | `/api/getForm`     | 応募フォーム定義の取得     |
+| GET      | `/api/getForm`     | 応募フォーム定義の取得（クエリ `id` 必須） |
 | POST     | `/api/submitForm`  | 応募フォームの送信         |
 | GET      | `/api/getAllowList`| 入場許可リスト（当選者＋スタッフ）の取得 |
 | GET      | `/api/isActive`    | 応募の受付状態（受付中かどうか）の取得 |
@@ -119,9 +119,19 @@ curl http://localhost:8080/api/getTerms
 
 #### リクエスト
 
-パラメータなし。
+クエリパラメータで `id`（フォームを識別する最大10文字のランダム文字列。応募者IDではない）を指定します。
 
-#### レスポンス（200）
+| パラメータ | 型     | 必須 | 制約       | 説明                                   |
+| ---------- | ------ | ---- | ---------- | -------------------------------------- |
+| `id`       | string | ○    | 最大10文字 | フォームを識別するランダム文字列（応募者IDではない） |
+
+```
+GET /api/getForm?id=Ab3xK9pQ2
+```
+
+#### レスポンス
+
+##### 成功（200）
 
 `Data` に `FormItem` の配列（`config.Form`）が入ります。
 配列の **インデックス番号** が、応募送信時（`/api/submitForm`）のキーに対応します。
@@ -159,10 +169,22 @@ curl http://localhost:8080/api/getTerms
 }
 ```
 
+##### `id` 未指定／10文字超過（400）
+
+```json
+{
+  "code": 400,
+  "msg": "bad request",
+  "Data": "Key: 'GetFormReq.Id' Error:Field validation for 'Id' failed on the 'required' tag"
+}
+```
+
+`Data` には具体的なバリデーションエラー内容が入ります。
+
 #### 使用例
 
 ```bash
-curl http://localhost:8080/api/getForm
+curl "http://localhost:8080/api/getForm?id=usr_xxxxx"
 ```
 
 ---

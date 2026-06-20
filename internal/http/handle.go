@@ -27,7 +27,34 @@ func (h *Handle) GetTerms(c *gin.Context) {
 	})
 }
 
+type GetFormReq struct {
+	Id string `form:"id" binding:"required,max=10"`
+}
+
 func (h *Handle) GetForm(c *gin.Context) {
+	req := &GetFormReq{}
+	err := c.ShouldBindQuery(req)
+	if err != nil {
+		c.JSON(400, CommonResp{
+			Code: 400,
+			Msg:  "bad request",
+			Data: err.Error(),
+		})
+		return
+	}
+	ok := false
+	h.p.Data.Read(func(d *data.Content) {
+		if d.Id == req.Id {
+			ok = true
+		}
+	})
+	if !ok {
+		c.JSON(404, CommonResp{
+			Code: 404,
+			Msg:  "not found",
+		})
+		return
+	}
 	c.JSON(200, CommonResp{
 		Code: 200,
 		Msg:  "success",
