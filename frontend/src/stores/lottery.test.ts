@@ -95,6 +95,63 @@ describe('lottery store', () => {
     })
   })
 
+  describe('initialize', () => {
+    it('id が無ければ API を呼ばず invalidForm=true', async () => {
+      const store = useLotteryStore()
+      const fetchMock = vi.fn()
+      vi.stubGlobal('fetch', fetchMock)
+      await store.initialize('')
+      expect(store.invalidForm).toBe(true)
+      expect(store.loading).toBe(false)
+      expect(fetchMock).not.toHaveBeenCalled()
+      vi.unstubAllGlobals()
+    })
+
+    const SITE = { title: '宵撫旅館', form_title: '抽選予約フォーム', terms: '規約' }
+
+    it('getForm が 400 のとき invalidForm=true', async () => {
+      const store = useLotteryStore()
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockImplementation((url: string) => {
+          const body = url.includes('isActive')
+            ? { code: 200, msg: 'success', Data: true }
+            : url.includes('getSiteData')
+              ? { code: 200, msg: 'success', Data: SITE }
+              : { code: 400, msg: 'bad request', Data: 'invalid id' }
+          return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) } as Response)
+        }),
+      )
+      await store.initialize('toolongid_x')
+      expect(store.invalidForm).toBe(true)
+      expect(store.loadError).toBeNull()
+      vi.unstubAllGlobals()
+    })
+
+    it('受付中かつ id 有効でサイト情報とフォームをセットする', async () => {
+      const store = useLotteryStore()
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockImplementation((url: string) => {
+          const body = url.includes('isActive')
+            ? { code: 200, msg: 'success', Data: true }
+            : url.includes('getSiteData')
+              ? { code: 200, msg: 'success', Data: SITE }
+              : { code: 200, msg: 'success', Data: FORM }
+          return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) } as Response)
+        }),
+      )
+      await store.initialize('Ab3xK9pQ2')
+      expect(store.invalidForm).toBe(false)
+      expect(store.isActive).toBe(true)
+      expect(store.siteTitle).toBe(SITE.title)
+      expect(store.formTitle).toBe(SITE.form_title)
+      expect(store.terms).toBe(SITE.terms)
+      expect(store.form).toEqual(FORM)
+      vi.unstubAllGlobals()
+    })
+  })
+
   describe('submit', () => {
     it('成功で submitSuccess=true', async () => {
       const store = useLotteryStore()

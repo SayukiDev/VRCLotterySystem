@@ -31,8 +31,9 @@ async function parseCommon<T>(res: Response): Promise<T> {
   return body.Data
 }
 
-export async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}/${path}`)
+export async function getJson<T>(path: string, params?: Record<string, string>): Promise<T> {
+  const qs = params ? `?${new URLSearchParams(params).toString()}` : ''
+  const res = await fetch(`${BASE}/${path}${qs}`)
   return parseCommon<T>(res)
 }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useLotteryStore } from '@/stores/lottery'
 import TermsDialog from '@/components/TermsDialog.vue'
@@ -8,12 +8,14 @@ import FormRenderer from '@/components/FormRenderer.vue'
 
 const store = useLotteryStore()
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
 
-// #/form を直接開かれた等で未初期化なら Loading へ戻す
+// リロードや #/<id>/form 直接アクセス等で未初期化なら、id を保ったまま Loading へ戻す
 onMounted(() => {
   if (!store.initialized || !store.isActive) {
-    router.replace('/')
+    const id = typeof route.params.id === 'string' ? route.params.id : ''
+    router.replace(id ? { name: 'loading', params: { id } } : { path: '/' })
   }
 })
 
@@ -57,7 +59,7 @@ async function onSubmit() {
     <!-- フォーム本体（同意後） -->
     <template v-else-if="store.termsAccepted">
       <header class="form-header">
-        <h1 class="form-heading">抽選応募フォーム</h1>
+        <h1 class="form-heading">{{ store.formTitle || '抽選応募フォーム' }}</h1>
       </header>
       <FormRenderer @submit="onSubmit" />
     </template>

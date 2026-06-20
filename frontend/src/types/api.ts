@@ -7,6 +7,16 @@ export interface CommonResp<T> {
   Data: T
 }
 
+/** /api/getSiteData で返るサイト表示情報 */
+export interface SiteData {
+  /** サイトのタイトル（document.title 等） */
+  title: string
+  /** フォームページのタイトル（見出し） */
+  form_title: string
+  /** 利用規約（Markdown） */
+  terms: string
+}
+
 export type FormType = 'content' | 'input' | 'options'
 
 /** /api/getForm で返るフォーム項目定義 */

@@ -23,9 +23,10 @@ describe('http service', () => {
     await expect(getJson<boolean>('isActive')).resolves.toBe(true)
   })
 
-  it('文字列の Data を返す', async () => {
-    mockFetchOnce({ code: 200, msg: 'success', Data: '規約本文' })
-    await expect(getJson<string>('getTerms')).resolves.toBe('規約本文')
+  it('オブジェクトの Data を返す', async () => {
+    const site = { title: 'サイト', form_title: 'フォーム', terms: '規約本文' }
+    mockFetchOnce({ code: 200, msg: 'success', Data: site })
+    await expect(getJson('getSiteData')).resolves.toEqual(site)
   })
 
   it('code>=400 のとき ApiError を throw し Data をエラー情報に持つ', async () => {
@@ -40,6 +41,12 @@ describe('http service', () => {
   it('HTTP エラー(res.ok=false)でも ApiError を throw する', async () => {
     mockFetchOnce({ code: 400, msg: 'bad request', Data: 'required field(X) not filled' }, false, 400)
     await expect(getJson('x')).rejects.toBeInstanceOf(ApiError)
+  })
+
+  it('params を渡すとクエリ文字列を付与して fetch する', async () => {
+    const fetchMock = mockFetchOnce({ code: 200, msg: 'success', Data: [] })
+    await getJson('getForm', { id: 'abc' })
+    expect(fetchMock).toHaveBeenCalledWith('/api/getForm?id=abc')
   })
 
   it('postJson は payload を JSON で送る', async () => {

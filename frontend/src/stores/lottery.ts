@@ -21,8 +21,14 @@ export const useLotteryStore = defineStore('lottery', () => {
   // ---- 初期ロード ----
   const loading = ref(true)
   const loadError = ref<string | null>(null)
+  // フォームURLが不正（id 欠落 / getForm が 400）。専用エラー表示に使う
+  const invalidForm = ref(false)
   const isActive = ref(false)
   const initialized = ref(false)
+
+  // ---- サイト情報 ----
+  const siteTitle = ref('')
+  const formTitle = ref('')
 
   // ---- 規約 ----
   const terms = ref('')
@@ -40,21 +46,45 @@ export const useLotteryStore = defineStore('lottery', () => {
   const submitError = ref<string | null>(null)
   const submitSuccess = ref(false)
 
-  /** 起動時: 受付状態と規約を取得し、受付中ならフォーム定義も取得する */
-  async function initialize() {
+  /**
+   * 起動時: 受付状態と規約を取得し、受付中ならフォーム定義も取得する。
+   * formId は URL（#/?id=...）由来のフォーム識別子。欠落/不正は invalidForm として扱う。
+   */
+  async function initialize(formId?: string) {
     loading.value = true
     loadError.value = null
+    invalidForm.value = false
+
+    // id が無ければ API を呼ばず即「URL不正」表示
+    if (!formId) {
+      invalidForm.value = true
+      loading.value = false
+      return
+    }
+
     try {
-      const [active, termsText] = await Promise.all([
+      const [active, site] = await Promise.all([
         lotteryApi.isActive(),
-        lotteryApi.getTerms(),
+        lotteryApi.getSiteData(),
       ])
       isActive.value = active
-      terms.value = termsText
+      siteTitle.value = site.title
+      formTitle.value = site.form_title
+      terms.value = site.terms
+      if (site.title) document.title = site.title
 
       if (active) {
-        const items = await lotteryApi.getForm()
-        setForm(items)
+        // getForm の 400（id 不正）だけは専用の URL 不正表示に振り分ける
+        try {
+          const items = await lotteryApi.getForm(formId)
+          setForm(items)
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 400) {
+            invalidForm.value = true
+            return
+          }
+          throw err
+        }
       }
       initialized.value = true
     } catch (err) {
@@ -148,8 +178,11 @@ export const useLotteryStore = defineStore('lottery', () => {
   return {
     loading,
     loadError,
+    invalidForm,
     isActive,
     initialized,
+    siteTitle,
+    formTitle,
     terms,
     termsAccepted,
     form,

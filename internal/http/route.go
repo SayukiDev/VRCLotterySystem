@@ -14,7 +14,7 @@ func NewRoute(h *Handle) *Route {
 
 func (r *Route) InjectRoute(e *gin.Engine) error {
 	api := e.Group("/api")
-	api.GET("getTerms", r.h.GetTerms)
+	api.GET("getSiteData", r.h.GetSiteData)
 	api.GET("getForm", r.h.GetForm)
 	api.POST("submitForm", r.h.SubmitForm)
 	api.GET("getAllowList", r.h.GetAllowList)

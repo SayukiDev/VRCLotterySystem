@@ -19,11 +19,11 @@ func NewHandle(p *provider.Provider) *Handle {
 	return &Handle{p: p}
 }
 
-func (h *Handle) GetTerms(c *gin.Context) {
+func (h *Handle) GetSiteData(c *gin.Context) {
 	c.JSON(200, CommonResp{
 		Code: 200,
 		Msg:  "success",
-		Data: h.p.C.Terms,
+		Data: h.p.C.SiteData,
 	})
 }
 

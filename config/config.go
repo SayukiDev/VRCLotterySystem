@@ -10,11 +10,17 @@ import (
 )
 
 type Config struct {
-	LogLevel        string       `json:"log_level" validate:"oneof=debug info warn error fatal"`
-	DataPath        string       `json:"data_path" validate:"required"`
-	DiscordMasterID string       `json:"discord_master_id" validate:"required"`
-	Terms           StringOrFile `json:"terms" validate:"required"` // Markdown
-	Form            []FormItem   `json:"form" validate:"required"`
+	LogLevel        string     `json:"log_level" validate:"oneof=debug info warn error fatal"`
+	DataPath        string     `json:"data_path" validate:"required"`
+	DiscordMasterID string     `json:"discord_master_id" validate:"required"`
+	SiteData        SiteData   `json:"site_data" validate:"required"`
+	Form            []FormItem `json:"form" validate:"required"`
+}
+
+type SiteData struct {
+	Title     string       `json:"title" validate:"required"`      // A title for the site
+	FormTitle string       `json:"form_title" validate:"required"` // A title for the form page
+	Terms     StringOrFile `json:"terms" validate:"required"`      // Markdown
 }
 
 type FormItem struct {

@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useLotteryStore } from '@/stores/lottery'
 
 const store = useLotteryStore()
 const router = useRouter()
+const route = useRoute()
 
 async function load() {
-  await store.initialize()
-  if (!store.loadError && store.isActive) {
-    router.replace('/form')
+  // フォーム識別 id は URL パス（#/<id>）から取得する
+  const id = typeof route.params.id === 'string' ? route.params.id : ''
+  await store.initialize(id)
+  if (!store.loadError && !store.invalidForm && store.isActive) {
+    // id をパスに残したままフォームへ（リロード時に再取得できるように）
+    router.replace({ name: 'form', params: { id } })
   }
 }
 
@@ -42,9 +46,20 @@ function retry() {
       </template>
     </Dialog>
 
+    <!-- フォームURL不正（id 欠落 / 不正） -->
+    <Dialog
+      :visible="!store.loading && !store.loadError && store.invalidForm"
+      modal
+      :closable="false"
+      header="エラー"
+      :style="{ width: '90%', maxWidth: '420px' }"
+    >
+      <p>フォームURLが正しくありません。<br />主催者から共有された正しいリンクをご確認ください。</p>
+    </Dialog>
+
     <!-- 受付終了 -->
     <Dialog
-      :visible="!store.loading && !store.loadError && !store.isActive"
+      :visible="!store.loading && !store.loadError && !store.invalidForm && !store.isActive"
       modal
       :closable="false"
       header="受付終了"
