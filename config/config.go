@@ -42,9 +42,9 @@ func (s *StringOrFile) UnmarshalJSON(b []byte) error {
 		if err != nil {
 			return err
 		}
-		(*s) = StringOrFile(bs)
+		*s = StringOrFile(bs)
 	} else {
-		(*s) = StringOrFile(body)
+		*s = StringOrFile(body)
 	}
 	return nil
 }
