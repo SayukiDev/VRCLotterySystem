@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"path/filepath"
+	"strings"
 
 	"github.com/SayukiDev/VRCLotterySystem/internal/global/validator"
 )
@@ -37,7 +37,7 @@ func (s *StringOrFile) UnmarshalJSON(b []byte) error {
 	if body == "" {
 		return nil
 	}
-	if filepath.Ext(body) != "" {
+	if strings.HasSuffix(body, ".md") {
 		bs, err := os.ReadFile(body)
 		if err != nil {
 			return err
