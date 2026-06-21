@@ -24,6 +24,18 @@ func BodyLimit(maxBytes int64) gin.HandlerFunc {
 	}
 }
 
+func TokenAuth(token string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.Request.Header.Get("Authorization") != token {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, CommonResp{
+				Code: http.StatusUnauthorized,
+				Msg:  "unauthorized",
+			})
+			return
+		}
+	}
+}
+
 func Logger() gin.HandlerFunc {
 	l := log.SubLogger("http")
 	return func(c *gin.Context) {

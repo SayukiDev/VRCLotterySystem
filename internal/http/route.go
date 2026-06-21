@@ -21,3 +21,9 @@ func (r *Route) InjectRoute(e *gin.Engine) error {
 	api.GET("isActive", r.h.IsActive)
 	return nil
 }
+
+func (r *Route) InjectAuthedRoute(e *gin.Engine, token string) error {
+	authed := e.Group("/api/authed")
+	authed.Use(TokenAuth(token))
+	return nil
+}

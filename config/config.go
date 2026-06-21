@@ -10,11 +10,11 @@ import (
 )
 
 type Config struct {
-	LogLevel        string     `json:"log_level" validate:"oneof=debug info warn error fatal"`
-	DataPath        string     `json:"data_path" validate:"required"`
-	DiscordMasterID string     `json:"discord_master_id" validate:"required"`
-	SiteData        SiteData   `json:"site_data" validate:"required"`
-	Form            []FormItem `json:"form" validate:"required"`
+	LogLevel string     `json:"log_level" validate:"oneof=debug info warn error fatal"`
+	DataPath string     `json:"data_path" validate:"required"`
+	Token    string     `json:"token" validate:"required"`
+	SiteData SiteData   `json:"site_data" validate:"required"`
+	Form     []FormItem `json:"form" validate:"required"`
 }
 
 type SiteData struct {
@@ -57,9 +57,9 @@ func (s *StringOrFile) UnmarshalJSON(b []byte) error {
 
 func DefaultConfig() *Config {
 	return &Config{
-		LogLevel:        "info",
-		DataPath:        "./data",
-		DiscordMasterID: "Input your discord id here",
+		LogLevel: "info",
+		DataPath: "./data",
+		Token:    "Input your token here",
 		Form: []FormItem{
 			{
 				Title: "Input your item title here",
