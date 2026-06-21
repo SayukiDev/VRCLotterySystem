@@ -19,6 +19,7 @@ CGO_ENABLED=0 GOOS=linux go build -a -trimpath -ldflags="-s -w -X main.Version={
 - [ ] データの永続化ロジックの改善（jsonlへ移行及びロジックの分離）
 - [x] フロントエンドの実装
 - [ ] 基本ロジックの見直し
+- [ ] 抽選アルゴリズムの簡略化（高度な乱数生成の必要ないと思うので、過剰設計を防ぐため）
 
 ## Project Structure
 ```
