@@ -13,7 +13,10 @@ CGO_ENABLED=0 GOOS=linux go build -a -trimpath -ldflags="-s -w -X main.Version={
 
 ## TODO
 - [ ] Unit Test
-- [ ] 管理用Discord botの実装
+- [ ] 管理用コンソールの実装
+- [ ] CSVからの抽選機能（場合次第）
+- [ ] 複数のFormへの対応
+- [ ] データの永続化ロジックの改善（jsonlへ移行及びロジックの分離）
 - [x] フロントエンドの実装
 - [ ] 基本ロジックの見直し
 
