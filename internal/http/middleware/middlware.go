@@ -1,9 +1,10 @@
-package http
+package middleware
 
 import (
 	"net/http"
 	"time"
 
+	"github.com/SayukiDev/VRCLotterySystem/internal/http/common"
 	"github.com/SayukiDev/VRCLotterySystem/log"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 func BodyLimit(maxBytes int64) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.ContentLength > maxBytes {
-			c.AbortWithStatusJSON(http.StatusRequestEntityTooLarge, CommonResp{
+			c.AbortWithStatusJSON(http.StatusRequestEntityTooLarge, common.CommonResp{
 				Code: http.StatusRequestEntityTooLarge,
 				Msg:  "request entity too large",
 			})
@@ -27,7 +28,7 @@ func BodyLimit(maxBytes int64) gin.HandlerFunc {
 func TokenAuth(token string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.Header.Get("Authorization") != token {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, CommonResp{
+			c.AbortWithStatusJSON(http.StatusUnauthorized, common.CommonResp{
 				Code: http.StatusUnauthorized,
 				Msg:  "unauthorized",
 			})

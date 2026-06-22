@@ -2,6 +2,8 @@ package http
 
 import (
 	"github.com/SayukiDev/VRCLotterySystem/config"
+	"github.com/SayukiDev/VRCLotterySystem/internal/http/handle"
+	"github.com/SayukiDev/VRCLotterySystem/internal/http/middleware"
 	"github.com/SayukiDev/VRCLotterySystem/internal/provider"
 
 	"github.com/gin-gonic/gin"
@@ -16,12 +18,12 @@ type Http struct {
 
 func NewHttp(c *config.Config, p *provider.Provider) *Http {
 	e := gin.New()
-	e.Use(Logger())
+	e.Use(middleware.Logger())
 	e.Use(gin.Recovery())
-	e.Use(BodyLimit(maxBodyBytes))
+	e.Use(middleware.BodyLimit(maxBodyBytes))
 	return &Http{
 		e:     e,
-		route: NewRoute(NewHandle(p)),
+		route: NewRoute(handle.NewHandle(p)),
 	}
 }
 

@@ -1,4 +1,4 @@
-package http
+package handle
 
 import (
 	"fmt"
@@ -6,21 +6,12 @@ import (
 	"time"
 
 	"github.com/SayukiDev/VRCLotterySystem/internal/data"
-	"github.com/SayukiDev/VRCLotterySystem/internal/provider"
-
+	"github.com/SayukiDev/VRCLotterySystem/internal/http/common"
 	"github.com/gin-gonic/gin"
 )
 
-type Handle struct {
-	p *provider.Provider
-}
-
-func NewHandle(p *provider.Provider) *Handle {
-	return &Handle{p: p}
-}
-
 func (h *Handle) GetSiteData(c *gin.Context) {
-	c.JSON(200, CommonResp{
+	c.JSON(200, common.CommonResp{
 		Code: 200,
 		Msg:  "success",
 		Data: h.p.C.SiteData,
@@ -35,7 +26,7 @@ func (h *Handle) GetForm(c *gin.Context) {
 	req := &GetFormReq{}
 	err := c.ShouldBindQuery(req)
 	if err != nil {
-		c.JSON(400, CommonResp{
+		c.JSON(400, common.CommonResp{
 			Code: 400,
 			Msg:  "bad request",
 			Data: err.Error(),
@@ -49,13 +40,13 @@ func (h *Handle) GetForm(c *gin.Context) {
 		}
 	})
 	if !ok {
-		c.JSON(404, CommonResp{
+		c.JSON(404, common.CommonResp{
 			Code: 404,
 			Msg:  "not found",
 		})
 		return
 	}
-	c.JSON(200, CommonResp{
+	c.JSON(200, common.CommonResp{
 		Code: 200,
 		Msg:  "success",
 		Data: h.p.C.Form,
@@ -70,7 +61,7 @@ func (h *Handle) SubmitForm(c *gin.Context) {
 	req := &SubmitFormReq{}
 	err := c.ShouldBindJSON(req)
 	if err != nil {
-		c.JSON(400, CommonResp{
+		c.JSON(400, common.CommonResp{
 			Code: 400,
 			Msg:  "bad request",
 			Data: err.Error(),
@@ -90,7 +81,7 @@ func (h *Handle) SubmitForm(c *gin.Context) {
 			_, ok = req.Input.Selected[i]
 		}
 		if !ok {
-			c.JSON(400, CommonResp{
+			c.JSON(400, common.CommonResp{
 				Code: 400,
 				Msg:  "bad request",
 				Data: fmt.Sprintf("required field(%s) not filled", v.Title),
@@ -100,7 +91,7 @@ func (h *Handle) SubmitForm(c *gin.Context) {
 	}
 	err = h.p.AddInput(req.Input)
 	if err != nil {
-		c.JSON(500, CommonResp{
+		c.JSON(500, common.CommonResp{
 			Code: 500,
 			Msg:  "internal server error",
 			Data: err.Error(),
@@ -108,7 +99,7 @@ func (h *Handle) SubmitForm(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	c.JSON(200, CommonResp{
+	c.JSON(200, common.CommonResp{
 		Code: 200,
 		Msg:  "success",
 	})
@@ -128,7 +119,7 @@ func (h *Handle) IsActive(c *gin.Context) {
 			ok = true
 		}
 	})
-	c.JSON(200, CommonResp{
+	c.JSON(200, common.CommonResp{
 		Code: 200,
 		Msg:  "success",
 		Data: ok,

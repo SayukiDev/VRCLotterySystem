@@ -1,12 +1,16 @@
 package http
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/SayukiDev/VRCLotterySystem/internal/http/handle"
+	"github.com/SayukiDev/VRCLotterySystem/internal/http/middleware"
+	"github.com/gin-gonic/gin"
+)
 
 type Route struct {
-	h *Handle
+	h *handle.Handle
 }
 
-func NewRoute(h *Handle) *Route {
+func NewRoute(h *handle.Handle) *Route {
 	return &Route{
 		h: h,
 	}
@@ -24,6 +28,6 @@ func (r *Route) InjectRoute(e *gin.Engine) error {
 
 func (r *Route) InjectAuthedRoute(e *gin.Engine, token string) error {
 	authed := e.Group("/api/authed")
-	authed.Use(TokenAuth(token))
+	authed.Use(middleware.TokenAuth(token))
 	return nil
 }

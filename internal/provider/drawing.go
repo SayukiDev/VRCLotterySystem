@@ -10,22 +10,19 @@ import (
 const ethUrl = "https://ethereum-rpc.publicnode.com"
 
 // SetDrawing Date format: 2006-01-02 15:04
-func (p *Provider) SetDrawing(max int, date string) error {
+func (p *Provider) SetDrawing(max int, date time.Time) error {
 	id, err := eth.NewClient(ethUrl).RandomString(8)
 	if err != nil {
 		return err
 	}
 	p.Data.Write(func(d *data.Content) {
 		d.Id = id
-		d.Date, err = time.Parse("2006-01-02 15:04", date)
+		d.Date = date
 		d.Showed = false
 		d.Max = max
 		d.Forms = make(data.Inputs)
 		d.Results = make(data.Results)
 	})
-	if err != nil {
-		return err
-	}
 	err = p.Data.Save(p.C.DataPath)
 	if err != nil {
 		return err

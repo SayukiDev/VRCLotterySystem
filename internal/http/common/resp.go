@@ -1,7 +1,7 @@
-package http
+package common
 
 type CommonResp struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
-	Data any
+	Data any    `json:"data"`
 }
