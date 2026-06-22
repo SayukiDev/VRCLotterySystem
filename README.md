@@ -23,7 +23,9 @@ CGO_ENABLED=0 GOOS=linux go build -a -trimpath -ldflags="-s -w -X main.Version={
 
 ## Project Structure
 ```
-├── frontend                      # フロントエンドのソースコード
+├── frontend/                      # フロントエンドのソースコード
+│   ├── user                       # ユーザー向けフロントエンド   
+│   └── admin                      # 管理者向け管理用フロントエンド
 ├── main.go                       
 ├── config/
 │   └── config.go                 # 設定ファイル(JSON)の定義・読み込み・バリデーション
