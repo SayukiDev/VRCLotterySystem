@@ -38,7 +38,12 @@ func (h *Handle) AddBlackList(c *gin.Context) {
 			Msg:  "internal server error",
 		})
 		c.Error(err)
+		return
 	}
+	c.JSON(200, common.CommonResp{
+		Code: 200,
+		Msg:  "success",
+	})
 }
 
 func (h *Handle) DeleteBlackList(c *gin.Context) {
@@ -91,6 +96,19 @@ func (h *Handle) AddStaff(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	err = h.p.AddStaff(req.Id)
+	if err != nil {
+		c.JSON(500, common.CommonResp{
+			Code: 500,
+			Msg:  "internal server error",
+		})
+		c.Error(err)
+		return
+	}
+	c.JSON(200, common.CommonResp{
+		Code: 200,
+		Msg:  "success",
+	})
 }
 
 func (h *Handle) DeleteStaff(c *gin.Context) {
@@ -105,6 +123,15 @@ func (h *Handle) DeleteStaff(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	err = h.p.RemoveStaff(req.Id)
+	if err != nil {
+		c.JSON(500, common.CommonResp{
+			Code: 500,
+			Msg:  "internal server error",
+		})
+		c.Error(err)
+		return
+	}
 	c.JSON(200, common.CommonResp{
 		Code: 200,
 		Msg:  "success",
@@ -113,7 +140,7 @@ func (h *Handle) DeleteStaff(c *gin.Context) {
 
 type SetDrawingReq struct {
 	Date time.Time `form:"date" binding:"required"`
-	max  int       `form:"max" binding:"required,min=1"`
+	Max  int       `form:"max" binding:"required,min=1"`
 }
 
 func (h *Handle) SetDrawing(c *gin.Context) {
@@ -127,7 +154,7 @@ func (h *Handle) SetDrawing(c *gin.Context) {
 		})
 		return
 	}
-	err = h.p.SetDrawing(req.max, req.Date)
+	id, err := h.p.SetDrawing(req.Max, req.Date)
 	if err != nil {
 		c.JSON(500, common.CommonResp{
 			Code: 500,
@@ -139,6 +166,16 @@ func (h *Handle) SetDrawing(c *gin.Context) {
 	c.JSON(200, common.CommonResp{
 		Code: 200,
 		Msg:  "success",
+		Data: id,
+	})
+}
+
+func (h *Handle) GetDrawing(c *gin.Context) {
+	d := h.p.GetDrawing()
+	c.JSON(200, common.CommonResp{
+		Code: 200,
+		Msg:  "success",
+		Data: d,
 	})
 }
 

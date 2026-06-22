@@ -14,6 +14,7 @@ const maxBodyBytes = 64 * 1024
 type Http struct {
 	e     *gin.Engine
 	route *Route
+	p     *provider.Provider
 }
 
 func NewHttp(c *config.Config, p *provider.Provider) *Http {
@@ -24,11 +25,16 @@ func NewHttp(c *config.Config, p *provider.Provider) *Http {
 	return &Http{
 		e:     e,
 		route: NewRoute(handle.NewHandle(p)),
+		p:     p,
 	}
 }
 
 func (h *Http) Start(addr string) error {
 	err := h.route.InjectRoute(h.e)
+	if err != nil {
+		return err
+	}
+	err = h.route.InjectAuthedRoute(h.e, h.p.C.Token)
 	if err != nil {
 		return err
 	}

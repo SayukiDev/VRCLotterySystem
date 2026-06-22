@@ -10,10 +10,10 @@ import (
 const ethUrl = "https://ethereum-rpc.publicnode.com"
 
 // SetDrawing Date format: 2006-01-02 15:04
-func (p *Provider) SetDrawing(max int, date time.Time) error {
+func (p *Provider) SetDrawing(max int, date time.Time) (string, error) {
 	id, err := eth.NewClient(ethUrl).RandomString(8)
 	if err != nil {
-		return err
+		return "", err
 	}
 	p.Data.Write(func(d *data.Content) {
 		d.Id = id
@@ -25,9 +25,35 @@ func (p *Provider) SetDrawing(max int, date time.Time) error {
 	})
 	err = p.Data.Save(p.C.DataPath)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return id, nil
+}
+
+type DrawingStatus struct {
+	Id     string    `json:"id"`
+	Date   time.Time `json:"date"`
+	Max    int       `json:"max"`
+	Showed bool      `json:"showed"`
+}
+
+func (p *Provider) GetDrawing() *DrawingStatus {
+	var id string
+	var date time.Time
+	var max int
+	var showed bool
+	p.Data.Read(func(d *data.Content) {
+		id = d.Id
+		date = d.Date
+		max = d.Max
+		showed = d.Showed
+	})
+	return &DrawingStatus{
+		Id:     id,
+		Date:   date,
+		Max:    max,
+		Showed: showed,
+	}
 }
 
 func (p *Provider) Drawing() ([]string, error) {
